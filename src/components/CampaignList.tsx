@@ -1,53 +1,79 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { ethers } from "ethers";
 import ContributeModal from "./ContributeModal";
+import CampaignRegistryABI from "../abi/CampaignRegistry.json";
+import { kv } from "@vercel/kv";
+
+const REGISTRY_ADDRESS = "0xc71ef9f2b682971fb4a56c02b892823205d58f59";
+
+interface Campaign {
+  id: number;
+  address: string;
+  // initiator: string;
+  title: string;
+  content: string;
+}
 
 const CampaignList: React.FC = () => {
-  const [campaigns, setCampaigns] = useState([
-    { id: 1, title: "Campaign 1", goal: 10 },
-    { id: 2, title: "Campaign 2", goal: 20 },
-  ]);
-  const [selectedCampaign, setSelectedCampaign] = useState<number | null>(null);
+  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
+  const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(
+    null
+  );
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleContribute = (campaignId: number) => {
-    setSelectedCampaign(campaignId);
+  useEffect(() => {
+    const fetchCampaigns = async () => {
+      try {
+        setCampaigns((await kv.get("campaigns")) as Campaign[]);
+      } catch (err) {
+        console.error("Error fetching campaigns:", err);
+        setError(
+          "Failed to load campaigns. Please make sure you're connected to the correct network and try again."
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCampaigns();
+  }, []);
+
+  const handleContribute = (campaign: Campaign) => {
+    setSelectedCampaign(campaign);
   };
 
   const handleCloseModal = () => {
     setSelectedCampaign(null);
   };
 
-  const handleSubmitContribution = (
-    campaignId: number,
-    cid: string,
-    password: string
-  ) => {
-    console.log(
-      `Contributing to campaign ${campaignId} with CID: ${cid} and password: ${password}`
-    );
-    // 在实际应用中，这里应该调用合约方法
-    handleCloseModal(); // 关闭模态框
-  };
+  if (loading)
+    return <div className="campaign-list-container">Loading campaigns...</div>;
+  if (error)
+    return <div className="campaign-list-container error">{error}</div>;
 
   return (
-    <div>
+    <div className="campaign-list-container">
       {campaigns.length > 0 ? (
-        campaigns.map((campaign) => (
-          <div key={campaign.id} className="campaign-item">
-            <h3>{campaign.title}</h3>
-            <p>Goal: {campaign.goal} ETH</p>
-            <button onClick={() => handleContribute(campaign.id)}>
-              Contribute
-            </button>
-          </div>
-        ))
+        <div className="campaign-grid">
+          {campaigns.map((campaign) => (
+            <div key={campaign.address} className="campaign-card">
+              <h2>{campaign.title}</h2>
+              <p>{campaign.content}</p>
+              <button onClick={() => handleContribute(campaign)}>
+                Contribute
+              </button>
+            </div>
+          ))}
+        </div>
       ) : (
-        <p>No active campaigns at the moment.</p>
+        <p className="no-campaigns">No active campaigns at the moment.</p>
       )}
-      {selectedCampaign !== null && (
+      {selectedCampaign && (
         <ContributeModal
-          campaignId={selectedCampaign}
+          campaignId={selectedCampaign.id}
+          campaignAddress={selectedCampaign.address}
           onClose={handleCloseModal}
-          onContribute={handleSubmitContribution}
         />
       )}
     </div>

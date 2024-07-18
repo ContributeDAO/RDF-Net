@@ -4,12 +4,20 @@ import DataNFTContractABI from "../../artifacts/contracts/DataNFTContract.sol/Da
 
 interface CampaignFormProps {
   onClose: () => void;
+  onCampaignCreated: (campaign: {
+    address: string;
+    title: string;
+    content: string;
+  }) => void;
 }
 
-const CampaignForm: React.FC<CampaignFormProps> = ({ onClose }) => {
+const CreateCampaign: React.FC<CampaignFormProps> = ({
+  onClose,
+  onCampaignCreated,
+}) => {
   const [title, setTitle] = useState("");
-  const [introduction, setIntroduction] = useState("");
-  const [reward, setReward] = useState("");
+  const [campaignContent, setCampaignContent] = useState("");
+  const [rewardDescription, setRewardDescription] = useState("");
   const [isDeploying, setIsDeploying] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [deployedAddress, setDeployedAddress] = useState<string | null>(null);
@@ -21,42 +29,41 @@ const CampaignForm: React.FC<CampaignFormProps> = ({ onClose }) => {
 
     try {
       if (typeof window.ethereum === "undefined") {
-        throw new Error("Please install MetaMask!");
+        throw new Error("请安装 MetaMask！");
       }
 
       await window.ethereum.request({ method: "eth_requestAccounts" });
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const signer = provider.getSigner();
 
-      const provider = new ethers.BrowserProvider(window.ethereum);
-      const signer = await provider.getSigner();
-
-      // 创建合约工厂
       const factory = new ethers.ContractFactory(
         DataNFTContractABI.abi,
         DataNFTContractABI.bytecode,
         signer
       );
 
-      // 部署合约
-      const contract = await factory.deploy();
+      // Combine campaign content and reward description
+      const content = `Campaign Content:\n${campaignContent}\n\nReward Description:\n${rewardDescription}`;
 
-      // 等待合约部署完成
-      await contract.waitForDeployment();
+      // Deploy contract with initial title and content
+      const contract = await factory.deploy(title, content);
+      await contract.deployed();
 
-      // 获取部署的合约地址
-      const contractAddress = await contract.getAddress();
+      const contractAddress = contract.address;
       setDeployedAddress(contractAddress);
 
-      // 调用合约方法添加内容
-      const tx = await contract.contributeData(introduction);
-      await tx.wait();
+      console.log("合约部署地址:", contractAddress);
+      console.log("Title:", title);
+      console.log("Content:", content);
 
-      console.log("Contract deployed to:", contractAddress);
-      console.log("Data contributed successfully");
-    } catch (error) {
-      console.error("Error deploying contract:", error);
-      setError(
-        error instanceof Error ? error.message : "An unknown error occurred"
-      );
+      onCampaignCreated({
+        address: contractAddress,
+        title,
+        content,
+      });
+    } catch (error: any) {
+      console.error("部署合约时出错:", error);
+      setError(`发生错误: ${error.message}`);
     } finally {
       setIsDeploying(false);
     }
@@ -68,7 +75,7 @@ const CampaignForm: React.FC<CampaignFormProps> = ({ onClose }) => {
         <h2>Create New Campaign</h2>
         <form onSubmit={handleSubmit}>
           <div>
-            <label htmlFor="title">Title:</label>
+            <label htmlFor="title">Campaign Title:</label>
             <input
               id="title"
               type="text"
@@ -78,27 +85,26 @@ const CampaignForm: React.FC<CampaignFormProps> = ({ onClose }) => {
             />
           </div>
           <div>
-            <label htmlFor="introduction">Introduction:</label>
+            <label htmlFor="campaignContent">Campaign Content:</label>
             <textarea
-              id="introduction"
-              value={introduction}
-              onChange={(e) => setIntroduction(e.target.value)}
+              id="campaignContent"
+              value={campaignContent}
+              onChange={(e) => setCampaignContent(e.target.value)}
               required
             />
           </div>
           <div>
-            <label htmlFor="reward">Reward:</label>
-            <input
-              id="reward"
-              type="text"
-              value={reward}
-              onChange={(e) => setReward(e.target.value)}
+            <label htmlFor="rewardDescription">Reward Description:</label>
+            <textarea
+              id="rewardDescription"
+              value={rewardDescription}
+              onChange={(e) => setRewardDescription(e.target.value)}
               required
             />
           </div>
           <div className="button-container">
             <button type="submit" disabled={isDeploying}>
-              {isDeploying ? "Deploying..." : "Deploy Contract"}
+              {isDeploying ? "Deploying..." : "Deploy Campaign"}
             </button>
             <button onClick={onClose} className="close-button">
               Close
@@ -107,11 +113,11 @@ const CampaignForm: React.FC<CampaignFormProps> = ({ onClose }) => {
         </form>
         {error && <p className="error">{error}</p>}
         {deployedAddress && (
-          <p>Contract deployed successfully to: {deployedAddress}</p>
+          <p>Campaign deployed successfully to: {deployedAddress}</p>
         )}
       </div>
     </div>
   );
 };
 
-export default CampaignForm;
+export default CreateCampaign;

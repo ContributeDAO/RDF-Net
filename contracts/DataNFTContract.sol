@@ -2,54 +2,63 @@
 pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
-import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract DataNFTContract is ERC721, ERC721Enumerable {
+interface ICampaignRegistry {
+    function registerCampaign(address campaignAddress, address initiator, string memory name, string memory content) external;
+}
+
+contract DataNFTContract is ERC721, Ownable {
     uint256 private _nextTokenId;
-
+    
     struct Data {
+        string title;
         string content;
-        address contributor;
     }
 
-    mapping(uint256 => Data) public dataEntries;
+    mapping(uint256 => Data) private _dataEntries;
+    
+    string public initialTitle;
+    string public initialContent;
 
-    constructor() ERC721("DataContributionNFT", "DCNFT") {}
+    address constant CAMPAIGN_REGISTRY_ADDRESS = 0xc71ef9f2b682971Fb4A56C02B892823205d58F59;
 
-    function contributeData(string memory _content) public returns (uint256) {
+    event DataContributed(uint256 indexed tokenId, address indexed contributor, string title, string content);
+    event CampaignInitialized(address initiator, string title, string content);
+
+    constructor(string memory _title, string memory _content) 
+        ERC721("DCNFT", "DC")
+        Ownable(msg.sender)
+    {
+        initialTitle = _title;
+        initialContent = _content;
+        
+        ICampaignRegistry(CAMPAIGN_REGISTRY_ADDRESS).registerCampaign(address(this), msg.sender, _title, _content);
+        
+        emit CampaignInitialized(msg.sender, _title, _content);
+    }
+
+    function contributeData(string calldata _title, string calldata _content) external returns (uint256) {
         uint256 tokenId = _nextTokenId++;
-        dataEntries[tokenId] = Data(_content, msg.sender);
+        _dataEntries[tokenId] = Data(_title, _content);
         _safeMint(msg.sender, tokenId);
+        
+        emit DataContributed(tokenId, msg.sender, _title, _content);
+        
         return tokenId;
     }
-
-    function getDataEntry(uint256 _tokenId) public view returns (string memory, address) {
-        require(ownerOf(_tokenId) != address(0), "Data entry does not exist");
-        Data memory data = dataEntries[_tokenId];
-        return (data.content, data.contributor);
+    
+    function getDataEntry(uint256 _tokenId) external view returns (string memory, string memory) {
+        require(_exists(_tokenId), "Data entry does not exist");
+        Data storage data = _dataEntries[_tokenId];
+        return (data.title, data.content);
     }
 
-    function _update(address to, uint256 tokenId, address auth)
-        internal
-        override(ERC721, ERC721Enumerable)
-        returns (address)
-    {
-        return super._update(to, tokenId, auth);
+    function getInitialCampaignData() external view returns (string memory, string memory) {
+        return (initialTitle, initialContent);
     }
 
-    function _increaseBalance(address account, uint128 value)
-        internal
-        override(ERC721, ERC721Enumerable)
-    {
-        super._increaseBalance(account, value);
-    }
-
-    function supportsInterface(bytes4 interfaceId)
-        public
-        view
-        override(ERC721, ERC721Enumerable)
-        returns (bool)
-    {
-        return super.supportsInterface(interfaceId);
+    function _exists(uint256 tokenId) internal view returns (bool) {
+        return _ownerOf(tokenId) != address(0);
     }
 }
