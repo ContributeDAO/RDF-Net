@@ -14,6 +14,7 @@ const CreateCampaign: React.FC<CampaignFormProps> = ({
 }) => {
     const [title, setTitle] = useState('');
     const [campaignContent, setCampaignContent] = useState('');
+    const [org, setOrg] = useState('');
     const [rewardAmount, setRewardAmount] = useState('');
     const [isDeploying, setIsDeploying] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -61,6 +62,7 @@ const CreateCampaign: React.FC<CampaignFormProps> = ({
                     console.log('TaskCreated:', taskID);
                     onCampaignCreated({
                         taskID,
+                        org,
                         title: taskName,
                         content: campaignContent,
                         reward: rewardAmount,
@@ -108,6 +110,16 @@ const CreateCampaign: React.FC<CampaignFormProps> = ({
                             type="text"
                             value={title}
                             onChange={(e) => setTitle(e.target.value)}
+                            required
+                        />
+                    </div>
+                    <div>
+                        <label htmlFor="org">Organization:</label>
+                        <input
+                            id="org"
+                            type="text"
+                            value={org}
+                            onChange={(e) => setOrg(e.target.value)}
                             required
                         />
                     </div>

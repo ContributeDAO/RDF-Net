@@ -3,4 +3,5 @@ export interface CampaignDetail {
     title: string;
     content: string;
     reward: string;
+    org: string;
 }

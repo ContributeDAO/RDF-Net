@@ -13,7 +13,7 @@ const CreateCampaign: React.FC = () => {
             id: campaign.taskID,
             title: campaign.title,
             description: campaign.content,
-            organization: '',
+            organization: campaign.org,
             themes: [],
             creationDate: new Date().toISOString(),
         });
