@@ -1,18 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { ethers } from "ethers";
 import { kv } from "@vercel/kv";
-
-interface Campaign {
-  id: number;
-  address: string;
-  // initiator: string;
-  title: string;
-  content: string;
-}
+import { CampaignDetail } from "../types/campaign";
 
 const CampaignList: React.FC = () => {
-  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
-  const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(
+  const [campaigns, setCampaigns] = useState<CampaignDetail[]>([]);
+  const [selectedCampaign, setSelectedCampaign] = useState<CampaignDetail | null>(
     null
   );
   const [loading, setLoading] = useState(true);
@@ -21,7 +14,7 @@ const CampaignList: React.FC = () => {
   useEffect(() => {
     const fetchCampaigns = async () => {
       try {
-        setCampaigns((await kv.get("campaigns")) as Campaign[]);
+        setCampaigns((await kv.get("campaigns")) as CampaignDetail[]);
       } catch (err) {
         console.error("Error fetching campaigns:", err);
         setError(
@@ -35,7 +28,7 @@ const CampaignList: React.FC = () => {
     fetchCampaigns();
   }, []);
 
-  const handleContribute = (campaign: Campaign) => {
+  const handleContribute = (campaign: CampaignDetail) => {
     setSelectedCampaign(campaign);
   };
 
@@ -52,13 +45,10 @@ const CampaignList: React.FC = () => {
     <div className="campaign-list-container">
       {campaigns.length > 0 ? (
         <div className="campaign-grid">
-          {campaigns.map((campaign) => (
-            <div key={campaign.address} className="campaign-card">
+          {campaigns.map((campaign, index) => (
+            <div key={index} className="campaign-card">
               <h2>{campaign.title}</h2>
               <p>{campaign.content}</p>
-              <button onClick={() => handleContribute(campaign)}>
-                Contribute
-              </button>
             </div>
           ))}
         </div>
