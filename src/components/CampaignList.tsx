@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { ethers } from "ethers";
-import { kv } from "@vercel/kv";
+import { registryKV } from "../kv";
 import { CampaignDetail } from "../types/campaign";
 
 const CampaignList: React.FC = () => {
@@ -14,7 +14,7 @@ const CampaignList: React.FC = () => {
   useEffect(() => {
     const fetchCampaigns = async () => {
       try {
-        setCampaigns((await kv.get("campaigns")) as CampaignDetail[]);
+        setCampaigns((await registryKV.get("campaigns")) as CampaignDetail[]);
       } catch (err) {
         console.error("Error fetching campaigns:", err);
         setError(

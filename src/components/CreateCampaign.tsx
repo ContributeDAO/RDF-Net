@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { kv } from '@vercel/kv';
+import { registryKV } from '../kv';
 import CampaignForm from './CampaignForm';
 import { CampaignDetail } from '../types/campaign';
 
@@ -8,7 +8,7 @@ const CreateCampaign: React.FC = () => {
 
     const handleCampaignCreated = async (campaign: CampaignDetail) => {
         console.log('New campaign created:', campaign);
-        let currentCampaigns = (await kv.get('campaigns')) as any[];
+        let currentCampaigns = (await registryKV.get('campaigns')) as any[];
         currentCampaigns.push({
             id: campaign.taskID,
             title: campaign.title,
@@ -17,7 +17,7 @@ const CreateCampaign: React.FC = () => {
             themes: [],
             creationDate: new Date().toISOString(),
         });
-        await kv.set('campaigns', JSON.stringify(currentCampaigns));
+        await registryKV.set('campaigns', JSON.stringify(currentCampaigns));
         console.log(currentCampaigns);
 
         setIsFormOpen(false);
@@ -25,9 +25,9 @@ const CreateCampaign: React.FC = () => {
     };
 
     useEffect(() => {
-        kv.get('campaigns').then((v: unknown) => {
+        registryKV.get('campaigns').then((v: unknown) => {
             console.log(v);
-            kv.set('campaigns', v as CampaignDetail[]);
+            registryKV.set('campaigns', v as CampaignDetail[]);
         });
     });
 
