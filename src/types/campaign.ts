@@ -1,6 +1,6 @@
-export interface Campaign {
-    id: string;
+export interface CampaignDetail {
+    taskID: number;
     title: string;
-    goal: number;
-    // 其他需要的属性
-  }
+    content: string;
+    reward: string;
+}

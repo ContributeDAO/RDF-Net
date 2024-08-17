@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { ethers } from "ethers";
 import JSEncrypt from "jsencrypt";
-import CampaignRegistryABI from "../abi/CampaignRegistry.json";
-import DataNFTContractABI from "../../artifacts/contracts/DataNFTContract.sol/DataNFTContract.json";
+import DataNFTContractABI from "../solidity/contracts/artifacts/RebellionDataFunder.json";
 
-const REGISTRY_ADDRESS = "0xf18da8f4b4d1163ab35b96817b2901c60aa1152d";
+const REGISTRY_ADDRESS = '0x65bC5ed6a981A48E2f191bdDB8FADF3317aDe9A5';
 
 interface ContributeModalProps {
   campaignId: number;

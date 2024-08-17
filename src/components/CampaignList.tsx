@@ -1,10 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { ethers } from "ethers";
 import ContributeModal from "./ContributeModal";
-import CampaignRegistryABI from "../abi/CampaignRegistry.json";
 import { kv } from "@vercel/kv";
-
-const REGISTRY_ADDRESS = "0xc71ef9f2b682971fb4a56c02b892823205d58f59";
 
 interface Campaign {
   id: number;
