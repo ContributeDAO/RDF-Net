@@ -29,7 +29,7 @@ const CreateCampaign: React.FC<CampaignFormProps> = ({
                 throw new Error('请安装 MetaMask！');
             }
 
-            await window.ethereum.request({ method: 'eth_requestAccounts' });
+            await window.ethereum.request?.({ method: 'eth_requestAccounts' });
             const provider = new ethers.providers.Web3Provider(window.ethereum);
             const signer = provider.getSigner();
 
