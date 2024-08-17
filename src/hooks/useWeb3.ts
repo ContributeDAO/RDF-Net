@@ -1,16 +1,15 @@
 import { useState, useEffect } from 'react';
 import { ethers } from 'ethers';
-import { Campaign } from '../types/campaign';
-import { CAMPAIGN_ABI, CAMPAIGN_FACTORY_ADDRESS } from '../utils/constants';
+import { CampaignDetail } from '../types/campaign';
 
 export const useWeb3 = () => {
   const [account, setAccount] = useState<string | null>(null);
-  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
+  const [campaigns, setCampaigns] = useState<CampaignDetail[]>([]);
 
   const connect = async () => {
     if (window.ethereum) {
       try {
-        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+        const accounts = await window.ethereum.request?.({ method: 'eth_requestAccounts' });
         setAccount(accounts[0]);
       } catch (error) {
         console.error("Failed to connect wallet:", error);
@@ -44,7 +43,7 @@ export const useWeb3 = () => {
 
       // Clean up listener on component unmount
       return () => {
-        window.ethereum.removeListener('accountsChanged', (accounts: string[]) => {
+        window.ethereum?.removeListener('accountsChanged', (accounts: string[]) => {
           setAccount(accounts[0] || null);
         });
       };

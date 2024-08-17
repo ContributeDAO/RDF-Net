@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { ethers } from "ethers";
-import ContributeModal from "./ContributeModal";
 import { kv } from "@vercel/kv";
 
 interface Campaign {
@@ -65,13 +64,6 @@ const CampaignList: React.FC = () => {
         </div>
       ) : (
         <p className="no-campaigns">No active campaigns at the moment.</p>
-      )}
-      {selectedCampaign && (
-        <ContributeModal
-          campaignId={selectedCampaign.id}
-          campaignAddress={selectedCampaign.address}
-          onClose={handleCloseModal}
-        />
       )}
     </div>
   );

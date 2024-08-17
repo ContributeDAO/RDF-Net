@@ -25,9 +25,9 @@ const CreateCampaign: React.FC = () => {
     };
 
     useEffect(() => {
-        kv.get('campaigns').then((v: CampaignDetail[]) => {
+        kv.get('campaigns').then((v: unknown) => {
             console.log(v);
-            kv.set('campaigns', v);
+            kv.set('campaigns', v as CampaignDetail[]);
         });
     });
 

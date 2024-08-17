@@ -1,8 +1,8 @@
 /// <reference types="react-scripts" />
-import { ExternalProvider } from '@ethersproject/providers';
+import { Provider } from '@ethersproject/providers';
 
 declare global {
     interface Window {
-        ethereum?: ExternalProvider;
+        ethereum?: Web3Provider;
     }
 }
